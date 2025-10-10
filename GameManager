@@ -1,0 +1,115 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class GameManager : MonoBehaviour
+{
+    private KeyCode _restartKey = KeyCode.R;
+    [Header("Physics")]
+    [SerializeField] private Player _player;
+    private ScoreManager _scoreManager;
+    [SerializeField] private float _sideBoundaryDistance = 10;
+    [SerializeField] private int _sideDestinationScore = 3;
+    [SerializeField] private GameObject _upperBoundary;
+    [SerializeField] private GameObject _lowerBoundary;
+    private float _upperBoundaryPosition;
+    private float _lowerBoundaryPosition;
+    [Header("User Interface")]
+    [SerializeField] private int _scoreToWin = 50;
+    [SerializeField] private Text _scoreText;
+    [SerializeField] private Text _jumpsText;
+    [SerializeField] private GameObject _looseScreen;
+    [SerializeField] private GameObject _winScreen;
+
+    private void Awake()
+    {
+        if (_player == null)
+        {
+            Debug.LogError($"{gameObject.name}: Player game object is not setted!");
+            return;
+        }
+
+        _scoreManager = _player.GetComponent<ScoreManager>();
+        StartGame();
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(_restartKey))
+            StartGame();
+
+        UpdateUI();
+
+        SideDestinationCheck();
+
+        CheckGameEndRestrictions();
+    }
+
+    private void StartGame()
+    {
+        _scoreManager.ResetAllCounters();
+
+        _upperBoundaryPosition = CalculateBoundaryPosition(_upperBoundary);
+        _lowerBoundaryPosition = CalculateBoundaryPosition(_lowerBoundary);
+
+        _looseScreen.gameObject.SetActive(false);
+        _winScreen.gameObject.SetActive(false);
+
+        _player.gameObject.SetActive(true);
+        _player.transform.position = Vector3.zero;
+        _player.GetComponent<Rigidbody>().velocity = Vector3.zero;
+    }
+
+    private void CheckGameEndRestrictions()
+    {
+        if (_scoreManager.TotalScore >= _scoreToWin)
+            EndCurrentGame(_winScreen);
+
+        if (_player.transform.position.y > _upperBoundaryPosition || _player.transform.position.y < _lowerBoundaryPosition)
+            EndCurrentGame(_looseScreen);
+    }
+
+    private void SideDestinationCheck()
+    {
+        if (_player.transform.position.x > _sideBoundaryDistance || _player.transform.position.x < -_sideBoundaryDistance)
+        {
+            _player.transform.position = new Vector3(0, _player.transform.position.y, _player.transform.position.z);
+            _scoreManager.AddScore(_sideDestinationScore);
+        }
+    }
+
+    private void EndCurrentGame(GameObject endscreenTitle)
+    {
+        if (endscreenTitle != null)
+        {
+            endscreenTitle.gameObject.SetActive(true);
+            _player.gameObject.SetActive(false);
+        }
+    }
+
+    private float CalculateBoundaryPosition(GameObject boundary)
+    {
+        float boundaryScaleY = boundary.transform.localScale.y;
+        float boundaryPositionY = boundary.transform.position.y;
+        float absoluteValue = Mathf.Abs(boundaryPositionY) - boundaryScaleY / 2;
+
+        if (boundaryPositionY < 0)
+            return -absoluteValue;
+        else
+            return absoluteValue;
+    }
+
+    private void UpdateUI()
+    {
+        if (_scoreText != null)
+            _scoreText.text = $"Total Score: {_scoreManager.TotalScore}";
+        else
+            Debug.LogWarning("Jumps Text not setted! Counter will not work");
+
+        if (_jumpsText != null)
+            _jumpsText.text = $"Jumps: {_scoreManager.JumpCount}";
+        else
+            Debug.LogWarning("Jumps Text not setted! Counter will not work");
+
+        Debug.Log($"Hidden side bound score: {_scoreManager.Score}");
+    }
+}

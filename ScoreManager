@@ -1,0 +1,16 @@
+using UnityEngine;
+
+public class ScoreManager : MonoBehaviour
+{
+    public int Score {  get; private set; }
+    public int JumpCount { get; private set; }
+    public int TotalScore => Score + JumpCount;
+
+    public void AddScore(int amount) => Score += amount;
+    public void ApplyJump() => JumpCount++;
+    public void ResetAllCounters()
+    {
+        Score = 0;
+        JumpCount = 0;
+    }
+}

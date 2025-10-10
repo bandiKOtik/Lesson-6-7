@@ -1,0 +1,48 @@
+using UnityEngine;
+
+[RequireComponent(typeof(ScoreManager))]
+public class Player : MonoBehaviour
+{
+    private ScoreManager _scoreManager;
+    private Rigidbody _rigidbody;
+    private Transform _transform;
+
+    private KeyCode _jump = KeyCode.Space;
+    [SerializeField] private float _jumpForce = 8f;
+    private KeyCode _moveLeft = KeyCode.A;
+    private KeyCode _moveRight = KeyCode.D;
+    [SerializeField] private float _slowdownEffect = 50f;
+
+    private void Awake()
+    {
+        _scoreManager = GetComponent<ScoreManager>();
+        _rigidbody = GetComponent<Rigidbody>();
+        _transform = GetComponent<Transform>();
+    }
+
+    private void Update()
+    {
+        ProcessJump();
+
+        ProcessMove();
+    }
+
+    private void ProcessJump()
+    {
+        if (Input.GetKeyDown(_jump))
+        {
+            _rigidbody.velocity = Vector3.zero;
+            _rigidbody.AddForce(Vector3.up * _jumpForce, ForceMode.Impulse);
+
+            _scoreManager.ApplyJump();
+        }
+    }
+
+    private void ProcessMove()
+    {
+        if (Input.GetKey(_moveRight))
+            _transform.position += Vector3.right / _slowdownEffect;
+        else if (Input.GetKey(_moveLeft))
+            _transform.position += Vector3.left / _slowdownEffect;
+    }
+}

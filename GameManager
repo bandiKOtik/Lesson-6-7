@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int _scoreToWin = 50;
     [SerializeField] private Text _scoreText;
     [SerializeField] private Text _jumpsText;
+    [SerializeField] private Text _startMessage;
     [SerializeField] private GameObject _looseScreen;
     [SerializeField] private GameObject _winScreen;
 
@@ -36,6 +37,9 @@ public class GameManager : MonoBehaviour
     {
         if (Input.GetKeyDown(_restartKey))
             StartGame();
+
+        if (Input.GetKeyDown(_player.CurrentJumpKey))
+            InitialPause(1, "");
 
         UpdateUI();
 
@@ -57,6 +61,14 @@ public class GameManager : MonoBehaviour
         _player.gameObject.SetActive(true);
         _player.transform.position = Vector3.zero;
         _player.GetComponent<Rigidbody>().velocity = Vector3.zero;
+
+        InitialPause(0, $"Click {_player.CurrentJumpKey} for Start.");
+    }
+
+    private void InitialPause(float timeScale, string messageText)
+    {
+        Time.timeScale = timeScale;
+        _startMessage.text = messageText;
     }
 
     private void CheckGameEndRestrictions()

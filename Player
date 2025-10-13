@@ -7,14 +7,29 @@ public class Player : MonoBehaviour
     private Rigidbody _rigidbody;
     private Transform _transform;
 
-    private KeyCode _jump = KeyCode.Space;
+    [Header("Animations")]
+    [SerializeField] private Animator _animator;
+    [SerializeField] private GameObject _particleSystem;
+    [SerializeField] private string _aliveKey = "Is Alive";
+    [SerializeField] private string _jumpKey = "Jump";
+    private int _directionRightIndex = 1;
+    private int _directionLeftIndex = -1;
+    private int _idleIndex = 0;
+
+    [Header("Physics")]
     [SerializeField] private float _jumpForce = 8f;
+    [SerializeField] private float _moveSpeed = 2;
+    private KeyCode _jump = KeyCode.Space;
     private KeyCode _moveLeft = KeyCode.A;
     private KeyCode _moveRight = KeyCode.D;
-    [SerializeField] private float _slowdownEffect = 50f;
+
+    public KeyCode CurrentJumpKey => _jump;
 
     private void Awake()
     {
+        if (_animator == null)
+            Debug.LogError("Player animator is null!");
+
         _scoreManager = GetComponent<ScoreManager>();
         _rigidbody = GetComponent<Rigidbody>();
         _transform = GetComponent<Transform>();
@@ -23,7 +38,6 @@ public class Player : MonoBehaviour
     private void Update()
     {
         ProcessJump();
-
         ProcessMove();
     }
 
@@ -35,14 +49,27 @@ public class Player : MonoBehaviour
             _rigidbody.AddForce(Vector3.up * _jumpForce, ForceMode.Impulse);
 
             _scoreManager.ApplyJump();
+            AnimateJump();
         }
     }
 
     private void ProcessMove()
     {
         if (Input.GetKey(_moveRight))
-            _transform.position += Vector3.right / _slowdownEffect;
+        {
+            _transform.position += (Vector3.right * _moveSpeed) * Time.deltaTime;
+        }
         else if (Input.GetKey(_moveLeft))
-            _transform.position += Vector3.left / _slowdownEffect;
+        {
+            _transform.position += (Vector3.left * _moveSpeed) * Time.deltaTime;
+        }
+    }
+
+    private void AnimateJump()
+    {
+        _animator.SetTrigger(_jumpKey);
+
+        if (_particleSystem != null)
+            Instantiate(_particleSystem, gameObject.transform.position, Quaternion.identity);
     }
 }
